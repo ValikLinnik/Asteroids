@@ -40,9 +40,6 @@ public class Asteroid : InjectorBase<Asteroid>, IDisposable
     #region SERIALIZE FIELDS
 
     [SerializeField]
-    protected Rigidbody _rigidbody;
-
-    [SerializeField]
     private int _scoreValue;
 
     #endregion
@@ -61,8 +58,6 @@ public class Asteroid : InjectorBase<Asteroid>, IDisposable
 
     #region PRIVATE PROPERTIES
 
-    private float _speed = 1;
-
     private Vector3 RandomDirection
     {
         get
@@ -78,15 +73,21 @@ public class Asteroid : InjectorBase<Asteroid>, IDisposable
 
     #endregion
 
+    #region PRIVATE FIELDS
+
+    private float _speed = 1;
+    private QuietComponent<Rigidbody> _rigidbody;
+
+    #endregion
+
     #region PUBLIC METHODS
 
     public void Initialize()
     {
-        if (!_rigidbody) throw new NullReferenceException("_rigidbody is null");
-
+        if(!_rigidbody) _rigidbody = new QuietComponent<Rigidbody>(this);
         _speed = UnityRandom.Range(.1f, 3f);
         var dir = RandomDirection;
-        _rigidbody.velocity = dir * _speed;
+        _rigidbody.Component.velocity = dir * _speed;
     }
 
     #endregion
@@ -112,7 +113,7 @@ public class Asteroid : InjectorBase<Asteroid>, IDisposable
 
     public void Dispose()
     {
-        _rigidbody.velocity = Vector3.zero;
+        if(_rigidbody && _rigidbody.Component) _rigidbody.Component.velocity = Vector3.zero;
         this.PutInPool();
     }
 

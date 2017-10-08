@@ -29,9 +29,6 @@ public class EnemyShip : InjectorBase<EnemyShip>, IDisposable
 
     #region SERIALIZE FIELDS
 
-    [SerializeField]
-    private Rigidbody _rigidbody;
-
     [SerializeField, Range(1, 10)]
     private float _speed = 1;
 
@@ -58,6 +55,8 @@ public class EnemyShip : InjectorBase<EnemyShip>, IDisposable
 
     #region PRIVATE FIELDS
 
+    private QuietComponent<Rigidbody> _rigidbody;
+
     private Vector3 RandomDirection
     {
         get
@@ -70,6 +69,7 @@ public class EnemyShip : InjectorBase<EnemyShip>, IDisposable
             return (new Vector3(x, y)).normalized;
         }
     }
+
     private float _angleOffSet = 270f;
 
     #endregion
@@ -78,8 +78,8 @@ public class EnemyShip : InjectorBase<EnemyShip>, IDisposable
 
     public void Initialize()
     {
-        if (!_rigidbody) return;
-        _rigidbody.velocity = RandomDirection * _speed;
+        if (!_rigidbody) _rigidbody = new QuietComponent<Rigidbody>(this);
+        _rigidbody.Component.velocity = RandomDirection * _speed;
         StopAllCoroutines();
         this.WaitAndDo( _shootDelay, Shot);
     }
@@ -127,7 +127,7 @@ public class EnemyShip : InjectorBase<EnemyShip>, IDisposable
     public void Dispose()
     {
         StopAllCoroutines();
-        if(_rigidbody) _rigidbody.velocity = Vector3.zero;
+        if(_rigidbody && _rigidbody.Component) _rigidbody.Component.velocity = Vector3.zero;
         this.PutInPool();
     }
 

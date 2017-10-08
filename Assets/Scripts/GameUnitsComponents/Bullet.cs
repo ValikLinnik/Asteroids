@@ -1,23 +1,29 @@
 ﻿using System;
-using Game.Data;
 using Injection;
 using UnityEngine;
 
 public class Bullet : InjectorBase<Bullet>, IDisposable 
 {
+    #region INJECTED FIELDS
+
     [Inject]
     private DataStorageManager _dataStorageManager;
 
-    #region SERIALIZE FIELDS
+    #endregion
 
-    [SerializeField]
-    private Rigidbody _rigidbody;
+    #region SERIALIZE FIELDS
 
     [SerializeField, Range(0, 10)]
     private float _speed = 1;
 
     [SerializeField, Range(0, 3)]
     private float _lifeTime = 1;
+
+    #endregion
+
+    #region PRIVATE FIELDS
+
+    private QuietComponent<Rigidbody> _rigidbody;
 
     #endregion
 
@@ -37,8 +43,8 @@ public class Bullet : InjectorBase<Bullet>, IDisposable
 
     public void Initialize()
     {
-        if (!_rigidbody) throw new NullReferenceException("_bulletRigidbody is null");
-        _rigidbody.AddForce(transform.up * _speed, ForceMode.Impulse);
+        if(!_rigidbody) _rigidbody = new QuietComponent<Rigidbody>(this);  
+        _rigidbody.Component.AddForce(transform.up * _speed, ForceMode.Impulse);
         StopAllCoroutines();
         this.WaitAndDo(_lifeTime, Dispose);
     }
@@ -49,7 +55,7 @@ public class Bullet : InjectorBase<Bullet>, IDisposable
 
     public void Dispose()
     {
-        if(_rigidbody) _rigidbody.velocity = Vector3.zero;
+        if(_rigidbody && _rigidbody.Component) _rigidbody.Component.velocity = Vector3.zero;
         this.PutInPool();
     }
 

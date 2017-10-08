@@ -14,9 +14,6 @@ public class ScreenBorderComponent : InjectorBase<ScreenBorderComponent>
     #region SERIALIZE FIELDS
 
     [SerializeField]
-    private Rigidbody _rigidbody;
-
-    [SerializeField]
     private MeshRenderer _modelRendelrer;
 
     #endregion
@@ -42,6 +39,8 @@ public class ScreenBorderComponent : InjectorBase<ScreenBorderComponent>
     private Vector2 _bottomLeft;
     private Vector2 _upRight;
     private Vector3 _modelSize;
+    private QuietComponent<Rigidbody> _rigidbody;
+
 
     #endregion
 
@@ -49,32 +48,37 @@ public class ScreenBorderComponent : InjectorBase<ScreenBorderComponent>
 
     private void Start()
     {
-        SetSize();    
+        SetSize();  
+        _rigidbody = new QuietComponent<Rigidbody>(this);
     }
 
     #endregion
 
-    #region METHODS
+    #region UNITY EVENTS
 
     private void FixedUpdate()
     {
         CheckMovingHandler();
     }
 
+    #endregion
+
+    #region PRIVATE METHODS
+
     private void CheckMovingHandler()
     {
-        if (!_rigidbody) throw new NullReferenceException("rigidbody is null");
-        if (_rigidbody.IsSleeping()) return;
+        if (!_rigidbody.Component) throw new NullReferenceException("rigidbody is null");
+        if (_rigidbody.Component.IsSleeping()) return;
 
         var pos = transform.position;
 
-        if (pos.x > _upRight.x && _rigidbody.velocity.x > 0 || pos.x < _bottomLeft.x && _rigidbody.velocity.x < 0)
+        if (pos.x > _upRight.x && _rigidbody.Component.velocity.x > 0 || pos.x < _bottomLeft.x && _rigidbody.Component.velocity.x < 0)
         {
             pos.x = -pos.x;
             transform.position = pos;
         }
 
-        if (pos.y > _upRight.y && _rigidbody.velocity.y > 0 || pos.y < _bottomLeft.y && _rigidbody.velocity.y < 0)
+        if (pos.y > _upRight.y && _rigidbody.Component.velocity.y > 0 || pos.y < _bottomLeft.y && _rigidbody.Component.velocity.y < 0)
         {
             pos.y = -pos.y;
             transform.position = pos;

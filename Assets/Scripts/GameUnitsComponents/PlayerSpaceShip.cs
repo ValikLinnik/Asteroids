@@ -37,9 +37,6 @@ public class PlayerSpaceShip : InjectorBase<PlayerSpaceShip>, IDisposable
 
     #region SERIALIZE FIELDS
 
-    [SerializeField]
-    protected Rigidbody _rigidbody;
-
     [SerializeField, Range(1f, 100f)]
     private float _rotationSpeed = 6f;
 
@@ -61,6 +58,8 @@ public class PlayerSpaceShip : InjectorBase<PlayerSpaceShip>, IDisposable
     #endregion
 
     #region PRIVATE FIELDS
+
+    private QuietComponent<Rigidbody> _rigidbody;
 
     private bool _isEngineEnabled;
 
@@ -89,6 +88,7 @@ public class PlayerSpaceShip : InjectorBase<PlayerSpaceShip>, IDisposable
 
     public void Initialize()
     {
+        if(!_rigidbody) _rigidbody = new QuietComponent<Rigidbody>(this);
         if(_shipAnimator) _shipAnimator.Play("Blink");
         InputSubcribe();
         if(_stateManager) _stateManager.OnStateChanged += OnStateChanged;
@@ -96,7 +96,7 @@ public class PlayerSpaceShip : InjectorBase<PlayerSpaceShip>, IDisposable
 
     public void Dispose()
     {
-        if(_rigidbody) _rigidbody.velocity = Vector3.zero;
+        if(_rigidbody && _rigidbody.Component) _rigidbody.Component.velocity = Vector3.zero;
         MoveForwardEnd();
         OnDestroy();
     }
@@ -149,8 +149,8 @@ public class PlayerSpaceShip : InjectorBase<PlayerSpaceShip>, IDisposable
     {
         if(_stateManager.CurrentState == GameState.Pause || _stateManager.CurrentState == GameState.GameOver) return;
 
-        if(!_rigidbody) throw new NullReferenceException("rigidbody is null");
-        _rigidbody.AddForce(transform.up * Time.deltaTime * _flySpeed, ForceMode.Impulse);
+        if(!_rigidbody || !_rigidbody.Component) throw new NullReferenceException("rigidbody is null");
+        _rigidbody.Component.AddForce(transform.up * Time.deltaTime * _flySpeed, ForceMode.Impulse);
         if(_enginesPlayerEffect) _enginesPlayerEffect.SetActive(true);
         if(_soundManager && !_isEngineEnabled) 
         {
